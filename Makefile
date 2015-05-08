@@ -1,6 +1,6 @@
 GO ?= godep go
 COVERAGEDIR = ./coverage
-all: build test cover
+all: build
 
 godep:
 	go get github.com/tools/godep
