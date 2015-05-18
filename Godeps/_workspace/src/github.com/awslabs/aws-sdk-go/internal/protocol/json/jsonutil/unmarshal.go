@@ -19,10 +19,6 @@ func UnmarshalJSON(v interface{}, stream io.Reader) error {
 		return err
 	}
 
-	if len(b) == 0 {
-		return nil
-	}
-
 	if err := json.Unmarshal(b, &out); err != nil {
 		return err
 	}

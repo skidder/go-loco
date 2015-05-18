@@ -13,8 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/awslabs/aws-sdk-go/aws/credentials"
-
 	"github.com/awslabs/aws-sdk-go/aws"
 )
 
@@ -59,30 +57,11 @@ type signer struct {
 }
 
 // Sign requests with signature version 4.
-//
-// Will sign the requests with the service config's Credentials object
-// Signing is skipped if the credentials is the credentials.AnonymousCredentials
-// object.
 func Sign(req *aws.Request) {
-	// If the request does not need to be signed ignore the signing of the
-	// request if the AnonymousCredentials object is used.
-	if req.Service.Config.Credentials == credentials.AnonymousCredentials {
-		return
-	}
-	creds, err := req.Service.Config.Credentials.Get()
+	creds, err := req.Service.Config.Credentials.Credentials()
 	if err != nil {
 		req.Error = err
 		return
-	}
-
-	region := req.Service.SigningRegion
-	if region == "" {
-		region = req.Service.Config.Region
-	}
-
-	name := req.Service.SigningName
-	if name == "" {
-		name = req.Service.ServiceName
 	}
 
 	s := signer{
@@ -91,8 +70,8 @@ func Sign(req *aws.Request) {
 		ExpireTime:      req.ExpireTime,
 		Query:           req.HTTPRequest.URL.Query(),
 		Body:            req.Body,
-		ServiceName:     name,
-		Region:          region,
+		ServiceName:     req.Service.ServiceName,
+		Region:          req.Service.Config.Region,
 		AccessKeyID:     creds.AccessKeyID,
 		SecretAccessKey: creds.SecretAccessKey,
 		SessionToken:    creds.SessionToken,
@@ -127,10 +106,8 @@ func (v4 *signer) sign() {
 		fmt.Fprintln(out, v4.canonicalString)
 		fmt.Fprintf(out, "---[ STRING TO SIGN ]--------------------------------\n")
 		fmt.Fprintln(out, v4.stringToSign)
-		if v4.isPresign {
-			fmt.Fprintf(out, "---[ SIGNED URL ]--------------------------------\n")
-			fmt.Fprintln(out, v4.Request.URL)
-		}
+		fmt.Fprintf(out, "---[ SIGNED URL ]--------------------------------\n")
+		fmt.Fprintln(out, v4.Request.URL)
 		fmt.Fprintf(out, "-----------------------------------------------------\n")
 	}
 }
@@ -232,7 +209,7 @@ func (v4 *signer) buildCanonicalHeaders() {
 }
 
 func (v4 *signer) buildCanonicalString() {
-	v4.Request.URL.RawQuery = strings.Replace(v4.Query.Encode(), "+", "%20", -1)
+	v4.Request.URL.RawQuery = v4.Query.Encode()
 	uri := v4.Request.URL.Opaque
 	if uri != "" {
 		uri = "/" + strings.Join(strings.Split(uri, "/")[3:], "/")
@@ -275,10 +252,12 @@ func (v4 *signer) buildSignature() {
 func (v4 *signer) bodyDigest() string {
 	hash := v4.Request.Header.Get("X-Amz-Content-Sha256")
 	if hash == "" {
-		if v4.isPresign && v4.ServiceName == "s3" {
-			hash = "UNSIGNED-PAYLOAD"
-		} else if v4.Body == nil {
-			hash = hex.EncodeToString(makeSha256([]byte{}))
+		if v4.Body == nil {
+			if v4.ServiceName == "s3" {
+				hash = "UNSIGNED-PAYLOAD"
+			} else {
+				hash = hex.EncodeToString(makeSha256([]byte{}))
+			}
 		} else {
 			hash = hex.EncodeToString(makeSha256Reader(v4.Body))
 		}
@@ -303,9 +282,7 @@ func makeSha256Reader(reader io.ReadSeeker) []byte {
 	packet := make([]byte, 4096)
 	hash := sha256.New()
 
-	start, _ := reader.Seek(0, 1)
-	defer reader.Seek(start, 0)
-
+	reader.Seek(0, 0)
 	for {
 		n, err := reader.Read(packet)
 		if n > 0 {
@@ -315,6 +292,7 @@ func makeSha256Reader(reader io.ReadSeeker) []byte {
 			break
 		}
 	}
+	reader.Seek(0, 0)
 
 	return hash.Sum(nil)
 }

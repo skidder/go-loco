@@ -8,8 +8,7 @@ type endpointStruct struct {
 }
 
 type endpointEntry struct {
-	Endpoint      string
-	SigningRegion string
+	Endpoint string
 }
 
 var endpointsMap = endpointStruct{
@@ -19,28 +18,19 @@ var endpointsMap = endpointStruct{
 			Endpoint: "{service}.{region}.amazonaws.com",
 		},
 		"*/cloudfront": endpointEntry{
-			Endpoint:      "cloudfront.amazonaws.com",
-			SigningRegion: "us-east-1",
-		},
-		"*/cloudsearchdomain": endpointEntry{
-			Endpoint:      "",
-			SigningRegion: "us-east-1",
+			Endpoint: "cloudfront.amazonaws.com",
 		},
 		"*/iam": endpointEntry{
-			Endpoint:      "iam.amazonaws.com",
-			SigningRegion: "us-east-1",
+			Endpoint: "iam.amazonaws.com",
 		},
 		"*/importexport": endpointEntry{
-			Endpoint:      "importexport.amazonaws.com",
-			SigningRegion: "us-east-1",
+			Endpoint: "importexport.amazonaws.com",
 		},
 		"*/route53": endpointEntry{
-			Endpoint:      "route53.amazonaws.com",
-			SigningRegion: "us-east-1",
+			Endpoint: "route53.amazonaws.com",
 		},
 		"*/sts": endpointEntry{
-			Endpoint:      "sts.amazonaws.com",
-			SigningRegion: "us-east-1",
+			Endpoint: "sts.amazonaws.com",
 		},
 		"ap-northeast-1/s3": endpointEntry{
 			Endpoint: "s3-{region}.amazonaws.com",
@@ -67,8 +57,7 @@ var endpointsMap = endpointStruct{
 			Endpoint: "s3.amazonaws.com",
 		},
 		"us-east-1/sdb": endpointEntry{
-			Endpoint:      "sdb.amazonaws.com",
-			SigningRegion: "us-east-1",
+			Endpoint: "sdb.amazonaws.com",
 		},
 		"us-gov-west-1/iam": endpointEntry{
 			Endpoint: "iam.us-gov.amazonaws.com",

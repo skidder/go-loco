@@ -4,9 +4,7 @@ package endpoints
 
 import "strings"
 
-// EndpointForRegion returns an endpoint and its signing region for a service and region.
-// if the service and region pair are not found endpoint and signingRegion will be empty.
-func EndpointForRegion(svcName, region string) (endpoint, signingRegion string) {
+func EndpointForRegion(svcName, region string) string {
 	derivedKeys := []string{
 		region + "/" + svcName,
 		region + "/*",
@@ -19,11 +17,8 @@ func EndpointForRegion(svcName, region string) (endpoint, signingRegion string) 
 			ep := val.Endpoint
 			ep = strings.Replace(ep, "{region}", region, -1)
 			ep = strings.Replace(ep, "{service}", svcName, -1)
-
-			endpoint = ep
-			signingRegion = val.SigningRegion
-			return
+			return ep
 		}
 	}
-	return
+	return ""
 }

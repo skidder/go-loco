@@ -1,19 +1,15 @@
 package endpoints
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
+import "testing"
 
 func TestGlobalEndpoints(t *testing.T) {
 	region := "mock-region-1"
 	svcs := []string{"cloudfront", "iam", "importexport", "route53", "sts"}
 
 	for _, name := range svcs {
-		ep, sr := EndpointForRegion(name, region)
-		assert.Equal(t, name+".amazonaws.com", ep)
-		assert.Equal(t, "us-east-1", sr)
+		if EndpointForRegion(name, region) != name+".amazonaws.com" {
+			t.Errorf("expected endpoint for %s to equal %s.amazonaws.com", name, name)
+		}
 	}
 }
 
@@ -22,7 +18,8 @@ func TestServicesInCN(t *testing.T) {
 	svcs := []string{"cloudfront", "iam", "importexport", "route53", "sts", "s3"}
 
 	for _, name := range svcs {
-		ep, _ := EndpointForRegion(name, region)
-		assert.Equal(t, name+"."+region+".amazonaws.com.cn", ep)
+		if EndpointForRegion(name, region) != name+"."+region+".amazonaws.com.cn" {
+			t.Errorf("expected endpoint for %s to equal %s.%s.amazonaws.com.cn", name, name, region)
+		}
 	}
 }

@@ -1,13 +1,13 @@
 package loco
 
 import (
-	"github.com/awslabs/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/awslabs/aws-sdk-go/service/dynamodb"
 )
 
 type Database struct {
-	dynamoDB *dynamodbiface.DynamoDBAPI
+	dynamoDB *dynamodb.DynamoDB
 }
 
-func NewDatabase(dynamoDB *dynamodbiface.DynamoDBAPI) *Database {
+func NewDatabase(dynamoDB *dynamodb.DynamoDB) *Database {
 	return &Database{dynamoDB: dynamoDB}
 }
