@@ -19,6 +19,27 @@ func FindCellIDs(area s2.Rect) (cellUnion s2.CellUnion) {
 	return s2.CellUnion{}
 }
 
+// Merge continuous cells in CellUnion and return a list of merged GeohashRanges.
+func MergeCells(cellUnion s2.CellUnion) (ranges []GeohashRange) {
+	ranges = make([]GeohashRange, 0)
+	var cellId s2.CellID
+	for _, cellId = range cellUnion {
+		currentRange := GeohashRange{RangeMin: cellId.RangeMin(), RangeMax: cellId.RangeMax()}
+		wasMerged := false
+
+		for _, r := range ranges {
+			if wasMerged = r.TryMerge(&currentRange); wasMerged == true {
+				break
+			}
+		}
+
+		if !wasMerged {
+			ranges = append(ranges, currentRange)
+		}
+	}
+	return
+}
+
 // Generate a geohash for the given latitude & longitude
 func GenerateGeohashFromLatLng(lat float64, lng float64) (geohash int64) {
 	p := s2.PointFromLatLng(s2.LatLngFromDegrees(lat, lng))
